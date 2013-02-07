@@ -1,3 +1,12 @@
+02/7/2013 Jet Goodson <jetgoodson@gmail.com>
+	- added rageAgainstTheSupportVectorMachine.R
+	- put good code in it, up to a grid search for cost/gamma
+	- added randomForestForTheTrees.R
+	- empty for now
+	
+01/30/2013 Katie Malone <cmmalone.158@gmail.com>
+	- cloned repo
+
 01/30/2012 Jet Goodson <jetgoodson@gmail.com>
 	- added LitteraLector.R
 	- put in some data handling stuff
@@ -11,6 +20,3 @@
 	- added data folder
 	- added data/test.csv
 	- added data/train.csv
-
-01/30/2013 Katie Malone <cmmalone.158@gmail.com>
-	- cloned repo
