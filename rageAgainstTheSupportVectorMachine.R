@@ -13,9 +13,12 @@ rageAgainstTheSupportVectorMachine <-function(dataset) {
 
    library(e1071)  #get the e1071 library, which accesses libsvm
 
+
+  # dataset$V1 <- as.character(dataset$V1)#did not work
+
    #split data set for cross validation by sampling from indices
    indices  <- 1:nrow(dataset)
-   splitdex <- sample(indices, trunc(length(indices)*30/100))
+   splitdex <- sample(indices, trunc(length(indices)*90/100))
    subTest  <- dataset[splitdex,]
    subTrain <- dataset[-splitdex, ]
 
@@ -44,7 +47,7 @@ rageAgainstTheSupportVectorMachine <-function(dataset) {
    bestGamma <- tuned$best.parameters[[1]] #get best gamma
    bestCost  <- tuned$best.parameters[[2]] #get best cost
 
-    model <- svm(V1~., data = subTrain, method = "C-classification", kernel="polynomial", gamma = bestGamma, cost = bestCost, cross = 10)
+    model <- svm(V1~., data = subTrain, type = "C-classification", kernel="polynomial", gamma = bestGamma, cost = bestCost, cross = 10, probability = FALSE)
     #most of these are the same as for tune, but this actually
     #builds the SVM with the gamma and cost we feed in
     #cross is some sort of cross validation checking
@@ -56,10 +59,11 @@ rageAgainstTheSupportVectorMachine <-function(dataset) {
 
    print(summary(model))
 
-   prediction <- predict(model, subTest, decision.values = TRUE)
+   prediction <- predict(model, subTest, decision.values = TRUE, probability = FALSE)
    #this actually applies the model to the test sub-dataset
 
-   tab <- table(pred = prediction, true = subTest$V1)
+   #tab <- table(pred = prediction, true = subTest$V1)
+   tab <- table(prediction, subTest$V1)   
    #this produces a table of prediction versus actually, or it should
    #I don't really understand the output I get from the 1-vs-1 model
 

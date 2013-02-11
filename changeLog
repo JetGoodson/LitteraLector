@@ -1,3 +1,10 @@
+02/11/2013 Jet Goodson <jetgoodson@gmail.com>
+	M rageAgainstTheSupportVectorMachine.R
+	- made the damn thing work
+	M LitteraLector.R
+	M utilityBelt.R
+	- got rid of nearZeroVar thing
+
 02/10/2013 Jet Goodson <jetgoodson@gmail.com>
 	- added utilityBelt.R
 	- holds various helper functions, mostly for

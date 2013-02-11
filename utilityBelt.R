@@ -78,36 +78,18 @@ deRezDataFrame <- function(frameJob, resFactor, hasLabels) {
 
 
 #function to write matrix to new csv
-writeDeRezedDataFrame <- function(inputName, outputName, resFactor, constantColumns = vector('numeric')) {
-   library(caret) 
-
+writeDeRezedDataFrame <- function(inputName, outputName, resFactor, hasLabels = TRUE) {
+  
    cat(c("Reading in ", inputName, "\n"))
 
    inputFrame <- read.csv(inputName, header=FALSE,skip=1,stringsAsFactors=FALSE)
  
    cat(c("Read in ", inputName, "\n"))
 
-   #if it has labels, just don't give it a constant column argument
-   hasLabels <- FALSE
-   if(length(constantColumns) == 0) {
-      hasLabels <- TRUE
-   }
-
    outputFrame <- deRezDataFrame(inputFrame, resFactor, hasLabels)
 
-   #get constantColumns from labeled data
-   if(hasLabels == TRUE) {
-      constantColumns <- nearZeroVar(outputFrame)
-   }
-   #this is from caret and removed columns where there is a low frequency of different entries, i.e.
-   #if there is only a handful of non-zero values in a column with ten-thousand zeroes, it's hasta la vista
-   #but the same columns must be removed in test for the model to work
-
-   outputFrame <- outputFrame[, -constantColumns]
-   cat("Nixed low-variance columns \n")
    write.csv(outputFrame, file = outputName, row.names=FALSE)
    cat(c("Wrote data frame to csv file", outputName, "\n\n"))
-
  
-   return(constantColumns)
+   return()
 } #end of writeDeRezedDataFrame function
