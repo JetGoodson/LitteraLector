@@ -1,3 +1,15 @@
+02/10/2013 Jet Goodson <jetgoodson@gmail.com>
+	- added utilityBelt.R
+	- holds various helper functions, mostly for
+	  changing resolution of character images
+        - added data/test_ReducedRez.csv
+        - added data/train_ReducedRez.csv
+	- feature-reduced versions of test.csv and train.csv
+	M LitteraLector.R
+	- made into more of a control macro
+	M rageAgainstTheSupportVectorMachine.R
+	- cleaned up
+	
 02/7/2013 Jet Goodson <jetgoodson@gmail.com>
 	- added rageAgainstTheSupportVectorMachine.R
 	- put good code in it, up to a grid search for cost/gamma
