@@ -4,7 +4,9 @@
 	M LitteraLector.R
 	M utilityBelt.R
 	- got rid of nearZeroVar thing
-
+        M LitteraLector.R
+	- adapted John BM's method of nixing constant columns
+	
 02/10/2013 Jet Goodson <jetgoodson@gmail.com>
 	- added utilityBelt.R
 	- holds various helper functions, mostly for

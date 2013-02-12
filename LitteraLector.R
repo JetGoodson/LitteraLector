@@ -15,7 +15,7 @@ LitteraLector <-function() {
    source("utilityBelt.R")                         #custom utility tools
    source("rageAgainstTheSupportVectorMachine.R")  #our calls to SVM
 
-   deRezData <- TRUE  #this will reduce the resolution of the original data
+   deRezData <- FALSE  #this will reduce the resolution of the original data
    deRezFactor <- 0.5  #a factor of 1/2 means that a 2x2 cluster of pixels becomes 1 pixel
                     #and a four fold decrease in features
 
@@ -28,19 +28,25 @@ LitteraLector <-function() {
       preTest = "data/test.csv"
       preTrain = "data/train.csv"
 
-      writeDeRezedDataFrame(preTrain, testInput, deRezFactor)
-      writeDeRezedDataFrame(preTest, trainInput, deRezFactor, hasLabels = FALSE)
+      writeDeRezedDataFrame(preTrain, trainInput, deRezFactor)
+      writeDeRezedDataFrame(preTest, testInput, deRezFactor, hasLabels = FALSE)
    }
 
    trainFrame <- read.csv(trainInput, header=FALSE,skip=1,stringsAsFactors=FALSE)
    testFrame  <- read.csv(testInput,  header=FALSE,skip=1,stringsAsFactors=FALSE)
 
+   cat("Loaded the training and test data\n")
+
+
    #get rid of constant columns
    constantColumns <- sapply(trainFrame, function(column){ all(column[1] == column) })
+   constantColumns <- as.vector(constantColumns)
+   constantColumns <- which(constantColumns)
    trainFrame <- trainFrame[, -constantColumns]
    constantColumns <- constantColumns - 1 #test data doesn't have labels, have to shift list down
    testFrame <- testFrame[, -constantColumns]  
 
+   cat("Nixed the constant features\n")
 
    svmModel <- rageAgainstTheSupportVectorMachine(trainFrame)
 

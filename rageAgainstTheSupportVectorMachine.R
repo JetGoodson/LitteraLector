@@ -18,14 +18,12 @@ rageAgainstTheSupportVectorMachine <-function(dataset) {
 
    #split data set for cross validation by sampling from indices
    indices  <- 1:nrow(dataset)
-   splitdex <- sample(indices, trunc(length(indices)*90/100))
+   splitdex <- sample(indices, trunc(length(indices)*98/100))
    subTest  <- dataset[splitdex,]
    subTrain <- dataset[-splitdex, ]
 
    cat(c("Test is ",  nrow(subTest),  " rows\n"))
    cat(c("Train is ", nrow(subTrain), " rows\n"))
-
-
 
 
    #first tune, the model using a grid search over gamma and cost to find
