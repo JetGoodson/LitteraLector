@@ -65,8 +65,9 @@ rageAgainstTheSupportVectorMachine <-function(dataset) {
    #this produces a table of prediction versus actually, or it should
    #I don't really understand the output I get from the 1-vs-1 model
 
-   print(head(tab))
-   print(tail(tab))
+#   drawPredictionTruthTable(tab)   # just prints the table 
+   drawPerformanceMatrix(tab)
+   write.table(tab, file="prediction_table.txt")
 
    return(model)
 

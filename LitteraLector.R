@@ -14,6 +14,7 @@ LitteraLector <-function() {
    #library(caret)                                  #get the zeroVar tools
    source("utilityBelt.R")                         #custom utility tools
    source("rageAgainstTheSupportVectorMachine.R")  #our calls to SVM
+   source("visualyze.R")                           # graphical tools for output
 
    deRezData <- FALSE  #this will reduce the resolution of the original data
    deRezFactor <- 0.5  #a factor of 1/2 means that a 2x2 cluster of pixels becomes 1 pixel
