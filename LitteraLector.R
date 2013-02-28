@@ -20,9 +20,10 @@ LitteraLector <-function() {
    deRezFactor <- 0.5  #a factor of 1/2 means that a 2x2 cluster of pixels becomes 1 pixel
                     #and a four fold decrease in features
 
-   testInput  = "data/test_ReducedRez.csv" #input files
-   trainInput = "data/train_ReducedRez.csv"
+   testInput  <- "data/test_ReducedRez.csv" #input files
+   trainInput <- "data/train_ReducedRez.csv"
 
+   prelimSVMModelOutput <- "prelimCharacterSVM"
 
 
    if(deRezData == TRUE) {
@@ -49,8 +50,19 @@ LitteraLector <-function() {
 
    cat("Nixed the constant features\n")
 
-   svmModel <- rageAgainstTheSupportVectorMachine(trainFrame)
+   svmModel <- rageAgainstTheSupportVectorMachine(trainFrame, "testSVM")
 
+ prelimSVMModelOutput <- "prelimCharacterSVM"
+
+ #this is e1071 specific, will use R generic for now
+ #write.svm(svmModel, svm.file = paste(c(prelimSVMModelOutput, "svm"), collapse="."), scale.file = paste(c(prelimSVMModelOutput, "scale"), collapse="."), yscale.file = paste(c(prelimSVMModelOutput, "yscale"), collapse="."))
+
+  #this saves the model into rda. 
+  save(svmModel, file=paste(c(prelimSVMModelOutput, "rda"), collapse="."))
+  #reload the data
+
+  #print(load(file=paste(c(prelimSVMModelOutput, "rda"), collapse="."))) #print will show you what was loaded
+  #print(summary(svmModel)) ###apparently this comes out with the same variable name...
 
    return()
 

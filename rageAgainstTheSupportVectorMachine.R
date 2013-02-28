@@ -8,7 +8,7 @@
 ##################################
 
 
-rageAgainstTheSupportVectorMachine <-function(dataset) {
+rageAgainstTheSupportVectorMachine <-function(dataset, modelName) {
 
 
    library(e1071)  #get the e1071 library, which accesses libsvm
@@ -66,8 +66,9 @@ rageAgainstTheSupportVectorMachine <-function(dataset) {
    #I don't really understand the output I get from the 1-vs-1 model
 
 #   drawPredictionTruthTable(tab)   # just prints the table 
-   drawPerformanceMatrix(tab)
-   write.table(tab, file="prediction_table.txt")
+   drawPerformanceMatrix(tab)#, paste(c("prediction_table", modelName, "png"), collapse="."))
+   write.table(tab, file=paste(c("prediction_table", modelName, "txt"), collapse="."))
+
 
    return(model)
 

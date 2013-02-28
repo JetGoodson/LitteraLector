@@ -19,8 +19,10 @@ getPredictionTruthTable <- function( ){
 }
 
 
-drawPerformanceMatrix<-function( table ){
+drawPerformanceMatrix<-function(table){
     matrix <- data.matrix(table)
+
+  
 
     ### large values on diagonal mess up color scale--remove them
     for(i in 1:nrow(matrix)) {
@@ -38,8 +40,8 @@ drawPerformanceMatrix<-function( table ){
     ColorLevels <- seq( min, max, length=length(ColorRamp) )
 
     main_title <- c("SVM Digit Classification")
-    x_label <- colnames(matrix)
-    y_label <- rownames(matrix)
+    x_label <- colnames(table)
+    y_label <- rownames(table)
     x_title <- c("actual value")
     y_title <- c("SVM prediction")
   
@@ -49,8 +51,10 @@ drawPerformanceMatrix<-function( table ){
 
 
     ### the data
-    image(1:length(x_label), 1:length(y_label), t(matrix), col=ColorRamp, xlab=x_title, ylab=y_title, zlim=c(min,max), main=main_title )
-    
+
+
+    image(0:(length(x_label)-1), 0:(length(y_label)-1), t(matrix), col=ColorRamp, xlab=x_title, ylab=y_title, zlim=c(min,max), main=main_title )
+        
     ### the colorscale/legend bar thing
     image(1, ColorLevels, 
         matrix(data = ColorLevels, nrow=1),
@@ -60,8 +64,7 @@ drawPerformanceMatrix<-function( table ){
     layout(1)     
 
 
-
-
+    
 
 #    image(matrix, xlab=c("actual value"), ylab=c("SVM prediction")) 
                                 ### if you call add=TRUE
