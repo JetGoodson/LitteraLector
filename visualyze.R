@@ -19,7 +19,7 @@ getPredictionTruthTable <- function( ){
 }
 
 
-drawPerformanceMatrix<-function(table){
+drawPerformanceMatrix<-function(table, imageName){
     matrix <- data.matrix(table)
 
   
@@ -52,9 +52,9 @@ drawPerformanceMatrix<-function(table){
 
     ### the data
 
-
-    image(0:(length(x_label)-1), 0:(length(y_label)-1), t(matrix), col=ColorRamp, xlab=x_title, ylab=y_title, zlim=c(min,max), main=main_title )
-        
+    image(0:(length(x_label)-1), 0:(length(y_label)-1), t(matrix), col=ColorRamp, xlab=x_title, ylab=y_title, zlim=c(min,max), main=main_title)
+   
+    
     ### the colorscale/legend bar thing
     image(1, ColorLevels, 
         matrix(data = ColorLevels, nrow=1),
@@ -63,7 +63,9 @@ drawPerformanceMatrix<-function(table){
 
     layout(1)     
 
-
+    #save layout as png
+    dev.copy(png, imageName)
+    dev.off()
     
 
 #    image(matrix, xlab=c("actual value"), ylab=c("SVM prediction")) 

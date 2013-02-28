@@ -9,6 +9,23 @@
 # functions/macros to call
 ##################################
 
+#splits dataset into train and test subcomponents
+culler <- function(dataset, trainPercent) {
+
+ #split data set for cross validation by sampling from indices
+   indices  <- 1:nrow(dataset)
+   splitdex <- sample(indices, trunc(length(indices)*(100 - trainPercent)/100))
+   subTest  <- dataset[splitdex,]
+   subTrain <- dataset[-splitdex, ]
+
+   cat(c("Test is ",  nrow(subTest),  " rows\n"))
+   cat(c("Train is ", nrow(subTrain), " rows\n"))
+
+   return( list(subTrain, subTest) )
+
+} #end of culler
+
+
 #this takes a matrix representing an image and reduces it's resolution by
 #the resFactor, i.e. resFactor = 1/2, 2x2 squares are averaged, 1/4 -> 4x4
 deRez <- function(theMatrix, resFactor) {
@@ -93,3 +110,15 @@ writeDeRezedDataFrame <- function(inputName, outputName, resFactor, hasLabels = 
  
    return()
 } #end of writeDeRezedDataFrame function
+
+
+
+#this applies a random jitter of 1 or 2 pixels (option) and 
+jitterbug <- function(theMatrix, jitter){
+
+
+} #end of jitterbug
+
+
+
+

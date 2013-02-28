@@ -23,8 +23,9 @@ LitteraLector <-function() {
    testInput  <- "data/test_ReducedRez.csv" #input files
    trainInput <- "data/train_ReducedRez.csv"
 
-   prelimSVMModelOutput <- "prelimCharacterSVM"
+   svmModelName <- "svmTest"
 
+   loadSavedSVM <- TRUE
 
    if(deRezData == TRUE) {
       preTest = "data/test.csv"
@@ -50,20 +51,22 @@ LitteraLector <-function() {
 
    cat("Nixed the constant features\n")
 
-   svmModel <- rageAgainstTheSupportVectorMachine(trainFrame, "testSVM")
+   if(loadSavedSVM == FALSE) {
+      trainAndTest <- culler(trainFrame, 2)
+      svmModel <- rageAgainstTheSupportVectorMachine(trainAndTest[[1]], svmModelName) ##double [[n]] needed for list elements
+      dataSave <- list(trainAndTest, svmModel)
+      save(dataSave, file=paste(c(svmModelName, "rda"), collapse="."))
+   } #create the SVM
+   if(loadSavedSVM == TRUE){
+      print(load(file=paste(c(svmModelName, "rda"), collapse=".")))
+      svmModel <- dataSave[[2]]
+      trainAndTest <- dataSave[[1]]
+   }
 
- prelimSVMModelOutput <- "prelimCharacterSVM"
 
- #this is e1071 specific, will use R generic for now
- #write.svm(svmModel, svm.file = paste(c(prelimSVMModelOutput, "svm"), collapse="."), scale.file = paste(c(prelimSVMModelOutput, "scale"), collapse="."), yscale.file = paste(c(prelimSVMModelOutput, "yscale"), collapse="."))
+   failedPredictices <- validateMachine(svmModel, trainAndTest[[2]], svmModelName)
 
-  #this saves the model into rda. 
-  save(svmModel, file=paste(c(prelimSVMModelOutput, "rda"), collapse="."))
-  #reload the data
 
-  #print(load(file=paste(c(prelimSVMModelOutput, "rda"), collapse="."))) #print will show you what was loaded
-  #print(summary(svmModel)) ###apparently this comes out with the same variable name...
-
-   return()
+   return("Vis vobiscum")
 
 } #end of LitteraLector macro

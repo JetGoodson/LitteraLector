@@ -13,26 +13,13 @@ rageAgainstTheSupportVectorMachine <-function(dataset, modelName) {
 
    library(e1071)  #get the e1071 library, which accesses libsvm
 
-
-  # dataset$V1 <- as.character(dataset$V1)#did not work
-
-   #split data set for cross validation by sampling from indices
-   indices  <- 1:nrow(dataset)
-   splitdex <- sample(indices, trunc(length(indices)*98/100))
-   subTest  <- dataset[splitdex,]
-   subTrain <- dataset[-splitdex, ]
-
-   cat(c("Test is ",  nrow(subTest),  " rows\n"))
-   cat(c("Train is ", nrow(subTrain), " rows\n"))
-
-
    #first tune, the model using a grid search over gamma and cost to find
    #the best results
    #V1 should be the labeled column, I dunno if that is a stable name though
    #I've also seen it get called X1 --- I'm hoping that was because it was
    #a derived data frame
 
-   tuned <- tune.svm(V1~., data = subTrain, kernel="polynomial", gamma = 10^(-6:-1), cost = 10^(-1:1))
+   tuned <- tune.svm(V1~., data = dataset, kernel="polynomial", gamma = 10^(-6:-1), cost = 10^(-1:1))
    
    #C-classification is the default
    #the polynomial goes as (X + C)^p
@@ -45,7 +32,7 @@ rageAgainstTheSupportVectorMachine <-function(dataset, modelName) {
    bestGamma <- tuned$best.parameters[[1]] #get best gamma
    bestCost  <- tuned$best.parameters[[2]] #get best cost
 
-    model <- svm(V1~., data = subTrain, type = "C-classification", kernel="polynomial", gamma = bestGamma, cost = bestCost, cross = 10, probability = FALSE)
+    model <- svm(V1~., data = dataset, type = "C-classification", kernel="polynomial", gamma = bestGamma, cost = bestCost, cross = 10, probability = FALSE)
     #most of these are the same as for tune, but this actually
     #builds the SVM with the gamma and cost we feed in
     #cross is some sort of cross validation checking
@@ -56,26 +43,80 @@ rageAgainstTheSupportVectorMachine <-function(dataset, modelName) {
     #a predicted digit
 
    print(summary(model))
-
-   prediction <- predict(model, subTest, decision.values = TRUE, probability = FALSE)
-   #this actually applies the model to the test sub-dataset
-
-   #tab <- table(pred = prediction, true = subTest$V1)
-   tab <- table(prediction, subTest$V1)   
-   #this produces a table of prediction versus actually, or it should
-   #I don't really understand the output I get from the 1-vs-1 model
-
-#   drawPredictionTruthTable(tab)   # just prints the table 
-   drawPerformanceMatrix(tab)#, paste(c("prediction_table", modelName, "png"), collapse="."))
-   write.table(tab, file=paste(c("prediction_table", modelName, "txt"), collapse="."))
-
-
    return(model)
 
 } #end of rageAgainstTheSupportVectorMachine
 
 
 #will add function to do prediction on actual test dataset
+
+
+
+#this handles testing the machine on the training sub-test data and printed a graph and prediction matrix
+validateMachine <-function(model, testFrame, modelName) {
+
+   prediction <- predict(model, testFrame, decision.values = FALSE, probability = FALSE)
+   #this actually applies the model to the test sub-dataset
+
+   #tab <- table(pred = prediction, true = testFrame$V1)
+   tab <- table(prediction, testFrame$V1)   
+   #this produces a table of prediction versus actually
+
+#   drawPredictionTruthTable(tab)   # just prints the table 
+   drawPerformanceMatrix(tab, paste(c("prediction_table", modelName, "png"), collapse="."))
+   write.table(tab, file=paste(c("prediction_table", modelName, "txt"), collapse="."))
+
+return(which(prediction != testFrame[[1]]))
+
+
+
+} #end of  validateMachine
+
+
+
+
+
+#virtualRage
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
