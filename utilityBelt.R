@@ -113,12 +113,68 @@ writeDeRezedDataFrame <- function(inputName, outputName, resFactor, hasLabels = 
 
 
 
-#this applies a random jitter of 1 or 2 pixels (option) and 
-jitterbug <- function(theMatrix, jitter){
+#this applies a jitter given by the x and y variables.
+jitterBug <- function(theMatrix, x, y){
 
+     library(matrixcalc)
 
+     if(x > 0) {
+          theMatrix <- shift.right(theMatrix, x)
+     }
+     if(x < 0) {
+          theMatrix <- shift.left(theMatrix, abs(x))
+     }
+
+     if(y > 0) {
+          theMatrix <- shift.up(theMatrix, y)
+     }
+     if(y < 0) {
+          theMatrix <- shift.down(theMatrix, abs(y))
+     }
+
+     return(theMatrix)
 } #end of jitterbug
 
 
+#create a synthetic dataset using jitterBox with a jitter in any direction given by jitterSize box (0,0) excluded
+synthesizeDataSet <- function(dataset, constantColumns, jitterSize) {
+    
+    dimension <- sqrt(ncol(dataset) - 1)
+    rowSize <- nrow(dataset) + 1
 
+    for(z in 1:nrow(dataset)) {
+
+         if((z %% 50) == 0) {
+            cat(c(z, "\n"))
+         }
+
+         imatrix <- matrix(dataset[z, -1], ncol = dimension)   
+         imatrix <- as.character(imatrix)
+         imatrix <- as.numeric(imatrix) #this seems necessary to use make numeric
+         imatrix <- matrix(imatrix, ncol = dimension)
+   
+         #image(imatrix)
+         #dev.copy(png, paste(c("testImages/matrix", z, "shiftx", "n", "0", "shifty", "n", "0", "png"), collapse="."))
+         #dev.off()
+
+         for(x in -jitterSize:jitterSize) {
+          for(y in -jitterSize:jitterSize) {
+            if(!(x == 0 && y == 0)) {
+            newMatrix <- jitterBug(imatrix, x, y)
+
+            newRow <- c(as.vector(newMatrix))
+            newRow <- c(dataset[z, 1], newRow)
+            dataset[rowSize, ] <- newRow
+            rowSize <- rowSize + 1
+            }
+          }#end of y loop
+        }#end of x loop
+
+    }#end of row loop
+
+   dataset <- dataset[, -constantColumns]
+
+   return(dataset)
+
+} #end of virtualDataSet
 
