@@ -1,3 +1,11 @@
+3/3/2013 Jet Goodson <jetgoodson@gmail.com>
+    M utilityBelt.R
+    M LitteraLector.R
+    M rageAgainstTheSupportVectorMachine.R
+    - switched to SparseM sparse matrices for storing dataset
+    - no longer need constant columns, since sparse
+    - scaled the data myself to save time (all features are between 0 and 255, so scaled to 0 and 1, which is well behave and doesn't really need scaling)
+
 3/1/2013 Jet Goodson <jetgoodson@gmail.com>
     M utilityBelt.R
     - added functions to apply jitter and synthesize data

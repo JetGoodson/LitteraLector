@@ -10,17 +10,18 @@
 
 rageAgainstTheSupportVectorMachine <-function(dataset, modelName, poly, bestGamma, bestCost) {
 
-    library(e1071)  #get the e1071 library, which accesses libsvm
 
-    model <- svm(V1~., data = dataset, type = "C-classification", kernel="polynomial", degree = poly, coef0 = 0.5, gamma = bestGamma, cost = bestCost, cross = 10, probability = TRUE)
+    responseVector <- as.vector(as.matrix(dataset[,1]))
+    library(e1071)  #get the e1071 library, which accesses libsvm
+model <- svm(x = dataset[,-1], y = responseVector, scale=FALSE, type = "C-classification",  kernel="polynomial", degree = poly, coef0 = 0.5, gamma = bestGamma, cost = bestCost, cross = 10, probability = TRUE)
+    rm(responseVector)
+    #model <- svm(V1~., data = dataset, type = "C-classification", kernel="polynomial", degree = poly, coef0 = 0.5, gamma = bestGamma, cost = bestCost, cross = 10, probability = TRUE)
     #most of these are the same as for tune, but this actually
     #builds the SVM with the gamma and cost we feed in
     #cross is some sort of cross validation checking
 
     #by default it does 1-vs-1 on multiple levels, so it really does
     #k*(k-1)/2 SVMs, so a 1 vs 9, a 2 vs 7, etc, and then just votes
-    #I don't really understand the output though, it isn't just giving me 
-    #a predicted digit
 
     print(summary(model))
     return(model)
@@ -29,21 +30,22 @@ rageAgainstTheSupportVectorMachine <-function(dataset, modelName, poly, bestGamm
 
 
 #this handles testing the machine on the training sub-test data and printed a graph and prediction matrix
-validateMachine <-function(model, testFrame, modelName) {
+validateMachine <-function(model, testSet, modelName) {
 
-   prediction <- predict(model, testFrame, decision.values = FALSE, probability = TRUE)
+   testVector <- as.vector(as.matrix(testSet[,1]))
+
+   prediction <- predict(model, testSet[,-1], decision.values = FALSE, probability = TRUE)
    #this actually applies the model to the test sub-dataset
 
-   #tab <- table(pred = prediction, true = testFrame$V1)
-   tab <- table(prediction, testFrame$V1)   
    #this produces a table of prediction versus actually
-
+   tab <- table(prediction, testVector)   
+  
    accuracy <- 0
    tabMatrix <- data.matrix(tab)
    for(i in 1:nrow(tabMatrix)) {
         accuracy <- accuracy + tabMatrix[i, i]
     }
-    accuracy <- 100.0*accuracy/nrow(testFrame)
+    accuracy <- 100.0*accuracy/nrow(testSet)
     cat(c(modelName, " validation accuracy is ", accuracy, "%\n"))
     cat("Sterling Archer voice: \"Which sucks, Lana. Do better.\" \n")
 
@@ -51,11 +53,10 @@ validateMachine <-function(model, testFrame, modelName) {
    drawPerformanceMatrix(tab, paste(c("prediction_table", modelName, "png"), collapse="."))
    write.table(tab, file=paste(c("prediction_table", modelName, "txt"), collapse="."))
 
-   #return(which(prediction != testFrame[[1]]))
+   compareFrame <- as.data.frame(cbind(testVector,prediction))
+   compareFrame <- compareFrame[which(prediction != testVector),]
 
-   compareFrame <- as.data.frame(cbind(testFrame[,1],prediction))
-   compareFrame <- compareFrame[which(prediction != testFrame[[1]]),]
-
+   rm(testVector)
    return(compareFrame)
 } #end of  validateMachine
 
@@ -76,17 +77,6 @@ tuneMachine <-function(dataset, tunePercent) {
     tuned <- tune.svm(V1~., data = dataset, kernel="polynomial", gamma = 10^(-6:-1), cost = 10^(-1:1))
     print(summary(tuned))
 }#end of tuneMachine
-
-
-#gets the actual support vectors from the model
-getSupportVectors <- function(svmModel, originalTrain) {
-
-    SVs <- row.names(svmModel$SV)
-    SVs <- as.vector(SVs)
-    frameSVs <- originalTrain[SVs, ]
-
-    return(frameSVs)
-}#end of getSupportVectors
 
 
 

@@ -9,6 +9,14 @@
 # functions/macros to call
 ##################################
 
+#gets a SparseM sparse matrix from a data frame
+getSparse <- function(dataFrame) {
+    tmpMat <- as.matrix(dataFrame)
+    sparseMat <- as.matrix.csr(tmpMat)
+    rm(tmpMat)
+     return(sparseMat)
+} #end of getSparse
+
 #splits dataset into train and test subcomponents
 culler <- function(dataset, trainPercent) {
 
@@ -136,12 +144,13 @@ jitterBug <- function(theMatrix, x, y){
 } #end of jitterbug
 
 
-#create a synthetic dataset using jitterBox with a jitter in any direction given by jitterSize box (0,0) excluded
-synthesizeDataSet <- function(dataset, constantColumns, jitterSize) {
-    
-    dimension <- sqrt(ncol(dataset) - 1)
-    rowSize <- nrow(dataset) + 1
 
+#create a synthetic dataset using jitterBox with a jitter in any direction given by jitterSize box (0,0) excluded
+synthesizeDataSet <- function(dataset, jitterSize) {
+    
+    dataset <- as.matrix(dataset)
+    dimension <- sqrt(ncol(dataset) - 1)
+   
     for(z in 1:nrow(dataset)) {
 
          if((z %% 50) == 0) {
@@ -154,27 +163,22 @@ synthesizeDataSet <- function(dataset, constantColumns, jitterSize) {
          imatrix <- matrix(imatrix, ncol = dimension)
    
          #image(imatrix)
-         #dev.copy(png, paste(c("testImages/matrix", z, "shiftx", "n", "0", "shifty", "n", "0", "png"), collapse="."))
+         #dev.copy(png, paste(c("testImages/matrix", z, "shiftx", "n", "0", "shifty", "n", "0", "label", dataset[z,1], "png"), collapse="."))
          #dev.off()
 
          for(x in -jitterSize:jitterSize) {
           for(y in -jitterSize:jitterSize) {
             if(!(x == 0 && y == 0)) {
             newMatrix <- jitterBug(imatrix, x, y)
-
             newRow <- c(as.vector(newMatrix))
             newRow <- c(dataset[z, 1], newRow)
-            dataset[rowSize, ] <- newRow
-            rowSize <- rowSize + 1
-            }
+            dataset <- rbind(dataset, newRow)
+           }
           }#end of y loop
         }#end of x loop
-
     }#end of row loop
 
-   dataset <- dataset[, -constantColumns]
-
-   return(dataset)
+   return(getSparse(dataset))
 
 } #end of virtualDataSet
 

@@ -12,6 +12,7 @@ LitteraLector <-function() {
 
    library(e1071)                                  #get the SVM tools
    #library(caret)                                  #get the zeroVar tools
+   library(SparseM)                                  #for sparse matrices
    source("utilityBelt.R")                         #custom utility tools
    source("rageAgainstTheSupportVectorMachine.R")  #our calls to SVM
    source("visualyze.R")                           # graphical tools for output
@@ -26,7 +27,7 @@ LitteraLector <-function() {
 
    svmModelName        <- "svmTest"
    virtualSVMModelName <- "virtualSVMTest"
-   poly = 3  #  a degree of 7 seems to be the max I can hack on a laptop, want 9
+   poly = 4  #  a degree of 7 seems to be the max I can hack on a laptop, want 9
 
    bestGamma <- 0.5
    bestCost  <- 5 #these are taken from deCoste & Schoelkopf and used as defaults, but I switched cost to 5
@@ -35,9 +36,9 @@ LitteraLector <-function() {
    loadSavedSVM <- FALSE
    doTune       <- FALSE
    tuneFraction <- 100
-   testFraction <- 1
+   trainFraction <- 70
 
-   ##############################################################################################  End of config
+   ##################################################################################  End of config
 
 
    if(deRezData == TRUE) {
@@ -55,35 +56,29 @@ LitteraLector <-function() {
 
  
    trainFrame <- read.csv(trainInput, header=FALSE,skip=1,stringsAsFactors=FALSE)
+   trainFrame[,-1] <- trainFrame[,-1]/255.0;
+   trainSparse <- getSparse(trainFrame)
+   rm(trainFrame)
+   
    testFrame  <- read.csv(testInput,  header=FALSE,skip=1,stringsAsFactors=FALSE)
+   testFrame <- testFrame/255.0;
+   testSparse <- getSparse(testFrame)
+   rm(testFrame)
 
    cat("Loaded the training and test data\n")
 
-
-   #get rid of constant columns
-   constantColumns <- sapply(trainFrame, function(column){ all(column[1] == column) })
-   constantColumns <- as.vector(constantColumns)
-   constantColumns <- which(constantColumns)
-   trainFrameNonConst <- trainFrame[, -constantColumns]
-   adjConstantColumns <- constantColumns - 1 #test data doesn't have labels, have to shift list down
-   testFrame <- testFrame[, -adjConstantColumns]  
-
-   cat("Nixed the constant features\n")
-
-    
    if(loadSavedSVM == FALSE) {
-      trainAndTest <- culler(trainFrameNonConst, testFraction)
-
-        if(doTune == TRUE) {
+       trainAndTest <- culler(trainSparse, trainFraction)
+       
+       if(doTune == TRUE) {
           tuned <- tuneMachine(trainedAndTest[[1]], tuneFraction)
           bestGamma <- tuned$best.parameters[[1]] #get best gamma
           bestCost  <- tuned$best.parameters[[2]] #get best cost
        }
-
       svmModel <- rageAgainstTheSupportVectorMachine(trainAndTest[[1]], svmModelName, poly, bestGamma, bestCost) ##double [[n]] needed for list elements
       dataSave <- list(trainAndTest, svmModel)  #put them in list to save list
       save(dataSave, file=paste(c(svmModelName, "rda"), collapse="."))
-   } #create the SVM
+   }
    if(loadSavedSVM == TRUE){
       print(load(file=paste(c(svmModelName, "rda"), collapse=".")))
       svmModel <- dataSave[[2]]
@@ -94,19 +89,20 @@ LitteraLector <-function() {
    #get a data frame with the indices, label, and prediction of images which where erroniously  classified 
    failedFrame <- validateMachine(svmModel, trainAndTest[[2]], svmModelName)
 
-   supportVectors <- getSupportVectors(svmModel, trainFrame) #get the actual support vectors
-   cat(c("Number of SVs: ", nrow(supportVectors), "\n"))
-   virtualTrainSet <- synthesizeDataSet(supportVectors, constantColumns, 1)  #use translational jitter to synthesize data from the support vectors
-   cat(c("Resulting number: ", nrow(virtualTrainSet), "\n"))
 
 
- 
-   virtualSVM <- rageAgainstTheSupportVectorMachine(virtualTrainSet, virtualSVMModelName, poly, bestGamma, bestCost)
-   virtualFailedFrame <- validateMachine(virtualSVM, trainAndTest[[2]], virtualSVMModelName)
+ supportVectors <-  trainAndTest[[1]][svmModel$index, ]
+ cat(c("Number of SVs: ", nrow(supportVectors), "\n"))
+ virtualTrainSet <- synthesizeDataSet(supportVectors, 1)  #use translational jitter to synthesize data from the support vectors
+ cat(c("Resulting number: ", nrow(virtualTrainSet), "\n"))
+
+ virtualSVM <- rageAgainstTheSupportVectorMachine(virtualTrainSet, virtualSVMModelName, poly, bestGamma, bestCost)
+ virtualFailedFrame <- validateMachine(virtualSVM, trainAndTest[[2]], virtualSVMModelName)
 
 
-   synthSVMModelName <- "synthSVMTest"
-   synthTrainSet     <- synthesizeDataSet(trainAndTest[[1]], constantColumns, 1)  #use translational jitter to synthesize data from the support vectors
+
+ synthSVMModelName <- "synthSVMTest"
+   synthTrainSet     <- synthesizeDataSet(trainAndTest[[1]], 1)  #use translational jitter to synthesize data from the support vectors
    synthSVM          <- rageAgainstTheSupportVectorMachine(synthTrainSet, synthSVMModelName, poly, bestGamma, bestCost)
    synthFailedFrame  <- validateMachine(synthSVM, trainAndTest[[2]], synthSVMModelName)
 
