@@ -7,7 +7,7 @@
 #first     > source("LitteraLector.R")
 #then call > LitteraLector()
 ###########################################
-
+#!/usr/bin/env Rscript 
 LitteraLector <-function() {
 
    library(e1071)                                  #get the SVM tools
@@ -17,6 +17,9 @@ LitteraLector <-function() {
    source("rageAgainstTheSupportVectorMachine.R")  #our calls to SVM
    source("visualyze.R")                           # graphical tools for output
 
+   outputLog <- "logFile.dat"
+   sink(outputLog, append=TRUE, split=TRUE)
+   
    deRezData <- FALSE  #this will reduce the resolution of the original data
    deRezFactor <- 0.5  #a factor of 1/2 means that a 2x2 cluster of pixels becomes 1 pixel
                     #and a four fold decrease in features
@@ -31,12 +34,14 @@ LitteraLector <-function() {
 
    bestGamma <- 0.5
    bestCost  <- 5 #these are taken from deCoste & Schoelkopf and used as defaults, but I switched cost to 5
- 
+   bestCoef  <- 0.5
 
-   loadSavedSVM <- FALSE
-   doTune       <- FALSE
-   tuneFraction <- 100
-   trainFraction <- 70
+   loadSavedSVM  <- FALSE
+   doTune        <- FALSE
+   tuneFraction  <- 10
+   trainFraction <- 80
+
+   parallelNodes <- 8 #2 cores on my laptop
 
    ##################################################################################  End of config
 
@@ -68,14 +73,21 @@ LitteraLector <-function() {
    cat("Loaded the training and test data\n")
 
    if(loadSavedSVM == FALSE) {
-       trainAndTest <- culler(trainSparse, trainFraction)
+       #trainAndTest <- culler(trainSparse, trainFraction)
+       trandAndTest <- c(trainSparse, trainSparse)
        
        if(doTune == TRUE) {
-          tuned <- tuneMachine(trainedAndTest[[1]], tuneFraction)
-          bestGamma <- tuned$best.parameters[[1]] #get best gamma
-          bestCost  <- tuned$best.parameters[[2]] #get best cost
+          #tuned <- tuneMachine(trainAndTest[[1]], tuneFraction, gams = bestGamma, costs = 10^(-1:1))
+          #bestGamma <- tuned$best.parameters[[1]] #get best gamma
+          #bestCost  <- tuned$best.parameters[[2]] #get best cost
+          #cat(c("Tuned that bad bow up\n"))
+         results <- parallelTuneMachine(trainAndTest[[1]], tuneFraction, parallelNodes)
+         bestCost <- results[1]
+         poly <- results[2]
+         bestGamma <- results[3]
+         bestCoef <- results[4]
        }
-      svmModel <- rageAgainstTheSupportVectorMachine(trainAndTest[[1]], svmModelName, poly, bestGamma, bestCost) ##double [[n]] needed for list elements
+      svmModel <- rageAgainstTheSupportVectorMachine(trainAndTest[[1]], svmModelName, poly, bestGamma, bestCost, bestCoef) ##double [[n]] needed for list elements
       dataSave <- list(trainAndTest, svmModel)  #put them in list to save list
       save(dataSave, file=paste(c(svmModelName, "rda"), collapse="."))
    }
@@ -88,23 +100,23 @@ LitteraLector <-function() {
 
    #get a data frame with the indices, label, and prediction of images which where erroniously  classified 
    failedFrame <- validateMachine(svmModel, trainAndTest[[2]], svmModelName)
+   svmPred <- applyMachine(svmModel, testSparse, svmModelName)
+     
+   supportVectors <-  trainAndTest[[1]][svmModel$index, ]
+   cat(c("Number of SVs: ", nrow(supportVectors), "\n"))
+   virtualTrainSet <- synthesizeDataSet(supportVectors, 1)  #use translational jitter to synthesize data from the support vectors
+   cat(c("Resulting number: ", nrow(virtualTrainSet), "\n"))
+   
+   virtualSVM <- rageAgainstTheSupportVectorMachine(virtualTrainSet, virtualSVMModelName, poly, bestGamma, bestCost)
+   virtualFailedFrame <- validateMachine(virtualSVM, trainAndTest[[2]], virtualSVMModelName)
+   applyMachine(virtualSVM, testSparse, virtualSVMModelName)
+   
+   
 
-
-
- supportVectors <-  trainAndTest[[1]][svmModel$index, ]
- cat(c("Number of SVs: ", nrow(supportVectors), "\n"))
- virtualTrainSet <- synthesizeDataSet(supportVectors, 1)  #use translational jitter to synthesize data from the support vectors
- cat(c("Resulting number: ", nrow(virtualTrainSet), "\n"))
-
- virtualSVM <- rageAgainstTheSupportVectorMachine(virtualTrainSet, virtualSVMModelName, poly, bestGamma, bestCost)
- virtualFailedFrame <- validateMachine(virtualSVM, trainAndTest[[2]], virtualSVMModelName)
-
-
-
- synthSVMModelName <- "synthSVMTest"
-   synthTrainSet     <- synthesizeDataSet(trainAndTest[[1]], 1)  #use translational jitter to synthesize data from the support vectors
-   synthSVM          <- rageAgainstTheSupportVectorMachine(synthTrainSet, synthSVMModelName, poly, bestGamma, bestCost)
-   synthFailedFrame  <- validateMachine(synthSVM, trainAndTest[[2]], synthSVMModelName)
+   #synthSVMModelName <- "synthSVMTest"
+   #synthTrainSet     <- synthesizeDataSet(trainAndTest[[1]], 1)  #use translational jitter to synthesize data from the support vectors
+   #synthSVM          <- rageAgainstTheSupportVectorMachine(synthTrainSet, synthSVMModelName, poly, bestGamma, bestCost)
+   #synthFailedFrame  <- validateMachine(synthSVM, trainAndTest[[2]], synthSVMModelName)
 
 
 

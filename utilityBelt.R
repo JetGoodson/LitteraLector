@@ -182,3 +182,94 @@ synthesizeDataSet <- function(dataset, jitterSize) {
 
 } #end of virtualDataSet
 
+
+
+
+#look at distributions for numbers for new features
+featureExplore <- function(dataFrame, label) {
+
+  library(Matrix)
+  
+  system("mkdir -p plots")
+
+  dataFrame <- dataFrame[dataFrame$V1 == label, -1]
+  dimension <- sqrt(ncol(dataFrame))
+   
+  vecSimpleFraction  <- vector()
+  vecFraction        <- vector()
+  vecMeanX           <- vector()
+  vecMeanY           <- vector()
+  vecUpLeft          <- vector()
+  vecUpRight         <- vector()
+  vecDownRight       <- vector()
+  vecDownLeft        <- vector()
+ 
+  
+  for(z in 1:nrow(dataFrame)) {
+    
+    if((z %% 500) == 0) {
+      cat(c(z, "\n"))
+    }
+
+    imatrix <- matrix(dataFrame[z, ], ncol = dimension)   
+    imatrix <- as.character(imatrix)
+    imatrix <- as.numeric(imatrix) #this seems necessary to use make numeric
+    imatrix <- matrix(imatrix, ncol = dimension)
+   
+    vecSimpleFraction <- c(vecSimpleFraction, nnzero(imatrix)/(dimension*dimension))
+    vecFraction <- c(vecFraction, sum(sum(imatrix))/(dimension*dimension))
+
+    tots <- sum(sum(imatrix))
+    
+    values <- c(1:dimension)
+    sumOfRows <- rowSums(imatrix)    
+    sumOfColumns <- colSums(imatrix)
+    meanX <- sum(sumOfColumns * values)/tots
+    meanY <- sum(sumOfRows * values)/tots
+    vecMeanX <- c(vecMeanX, meanX)
+    vecMeanY <- c(vecMeanY, meanY)
+    meanX <- as.integer(meanX) 
+    meanY <- as.integer(meanY)
+    #cat(c(label, ": ", meanX, ", ", meanY, "\n"))
+    vecUpLeft <- c(vecUpLeft, sum(sum(imatrix[(meanY+1):dimension, 1:meanX]))/tots)
+    vecUpRight <- c(vecUpRight, sum(sum(imatrix[(meanY+1):dimension, (meanX+1):dimension]))/tots)
+    vecDownLeft <- c(vecDownLeft, sum(sum(imatrix[1:meanY, 1:meanX]))/tots)
+    vecDownRight <- c(vecDownRight, sum(sum(imatrix[1:meanY, (meanX+1):dimension]))/tots) 
+  }#end of loop
+
+  hist(vecSimpleFraction, breaks=(0:100)/100, xlab="Fraction of Cells Filled", ylab = "Count/0.01", main="Fraction of Cells Which Have Non-Zero Value")
+  dev.copy(png, paste(c("plots/hist_simpleFraction", label, "png"), collapse="."))
+  dev.off()
+   
+  hist(vecFraction, breaks=(0:100)/100, xlab="Fraction Filled", ylab = "Count/0.01", main="Fraction of Filled Space")
+  dev.copy(png, paste(c("plots/hist_fraction", label, "png"), collapse="."))
+  dev.off()
+
+  hist(vecMeanX, breaks=dimension*(30:70)/100, xlab="X-Mean", ylab = "Count/0.01", main="X-Mean")
+  dev.copy(png, paste(c("plots/hist_meanX", label, "png"), collapse="."))
+  dev.off()
+
+  hist(vecMeanY, breaks=dimension*(30:70)/100, xlab="Y-Mean", ylab = "Count/0.01", main="Y-Mean")
+  dev.copy(png, paste(c("plots/hist_meanY", label, "png"), collapse="."))
+  dev.off()
+
+
+  hist(vecUpLeft, breaks=(0:100)/100, xlab="Fraction", ylab = "Count/0.01", main="Fraction in Upper Left")
+  dev.copy(png, paste(c("plots/hist_upLeft", label, "png"), collapse="."))
+  dev.off()
+
+  hist(vecUpRight, breaks=(0:100)/100, xlab="Fraction", ylab = "Count/0.01", main="Fraction in Upper Right")
+  dev.copy(png, paste(c("plots/hist_upRight", label, "png"), collapse="."))
+  dev.off()
+
+  
+
+  hist(vecDownLeft, breaks=(0:100)/100, xlab="Fraction", ylab = "Count/0.01", main="Fraction in Lower Left")
+  dev.copy(png, paste(c("plots/hist_downLeft", label, "png"), collapse="."))
+  dev.off()
+
+  hist(vecDownRight, breaks=(0:100)/100, xlab="Fraction", ylab = "Count/0.01", main="Fraction in Lower Right")
+  dev.copy(png, paste(c("plots/hist_downRight", label, "png"), collapse="."))
+  dev.off()
+ 
+}#end of feature explore
