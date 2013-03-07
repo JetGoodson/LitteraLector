@@ -1,7 +1,7 @@
 #################################
 # utilityBelt.R
 # written by Jet Goodson 
-# started on 8 February 2009
+# started on 8 February 2013
 # contact at jetgoodson@gmail.com
 #
 # general file to hold utility functions
@@ -121,7 +121,7 @@ writeDeRezedDataFrame <- function(inputName, outputName, resFactor, hasLabels = 
 
 
 
-#this applies a jitter given by the x and y variables.
+#this applies a jitter given by the x and y variables. for a matrix
 jitterBug <- function(theMatrix, x, y){
 
      library(matrixcalc)
@@ -143,6 +143,57 @@ jitterBug <- function(theMatrix, x, y){
      return(theMatrix)
 } #end of jitterbug
 
+#this applies the jitter to the whole dataset at once (more efficient, faster)
+jitterHive <- function(dataset, x, y) {
+  dimension <- sqrt(ncol(dataset) - 1)
+  if(y > 0) {
+    dataset <- cbind(dataset[,1],
+                     dataset[,(2 + y*dimension):(dimension*dimension + 1)],
+                     matrix(0, nrow=nrow(dataset), ncol=(y*dimension)))
+  }#y>0
+  if(y < 0) {
+    colKill = dimension*dimension + 1 + y*dimension
+    dataset <- cbind(dataset[,1],
+                     matrix(0, nrow=nrow(dataset), ncol=abs(y)*dimension),
+                     dataset[,2:colKill])
+  }#y<0
+ 
+  if(x > 0) {
+    for(i in 1:x){
+      dataset <- cbind(dataset[,1],
+                      matrix(0, nrow=nrow(dataset), ncol=1),
+                      dataset[,2:(ncol(dataset)-1)])
+      for(j in 1:(dimension-1)){
+        dataset[,(2+j*dimension)] <- matrix(0, nrow=nrow(dataset), ncol=1)
+      }
+    }
+  } #x>0
+  if(x < 0) {
+    for(i in 1:abs(x)){
+      dataset <- cbind(dataset[, 1],
+                       dataset[, 3:(dimension*dimension + 1)],
+                       matrix(0, nrow=nrow(dataset), ncol=1))
+      for(j in 1:(dimension-1)){
+        dataset[,(dimension*dimension + 1 - j*dimension)] <- matrix(0, nrow=nrow(dataset), ncol=1)
+      }
+    }
+  }#x<0
+            
+  return(dataset)
+} #end of jitterhive  
+
+
+#create a synthetic dataset using jitterBox with a jitter in any direction given by jitterSize box (0,0) excluded
+synthesizeDataSetFast <- function(dataset, jitterSize) {
+  dataset     <- as.matrix(dataset)
+  datasetOrig <- as.matrix(dataset)
+  for(x in -jitterSize:jitterSize) {
+    for(y in -jitterSize:jitterSize) {
+      if(!(x == 0 && y == 0)) {
+        dataset <- rbind(dataset, jitterHive(datasetOrig, x, y))
+      }}}
+  return(dataset)
+}#end of synthesizeDataSetFast
 
 
 #create a synthetic dataset using jitterBox with a jitter in any direction given by jitterSize box (0,0) excluded

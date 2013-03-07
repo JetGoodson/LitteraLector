@@ -33,6 +33,13 @@ drawPerformanceMatrix<-function(table, imageName){
     min = min(matrix, na.rm=TRUE)
     max = max(matrix, na.rm=TRUE)
 
+    if(min == max){
+      matrix <- data.matrix(table)
+      min = min(matrix, na.rm=TRUE)
+      max = max(matrix, na.rm=TRUE)
+    }
+
+    
     ### color scale
     ColorRamp <- rgb( seq(0, 1, length=256), ### red
                       seq(1, 0, length=256), ### green
@@ -74,5 +81,5 @@ drawPerformanceMatrix<-function(table, imageName){
                                 ### (google for more information)
 
 #    image(matrix, add=TRUE, xlab=c("actual value"), ylab=c("SVM prediction"))
-
+    return("")
 }

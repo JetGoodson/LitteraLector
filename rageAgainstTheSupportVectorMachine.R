@@ -1,7 +1,7 @@
 #################################
 # rageAgainstTheSupportVectorMachine.R
 # written by Katie Malone & Jet Goodson 
-# started on 8 February 2009
+# started on 8 February 2013
 # contact at cmmalone.158@gmail.com, jetgoodson@gmail.com
 #
 # functions to do SVM
