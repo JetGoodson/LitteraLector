@@ -107,7 +107,7 @@ LitteraLector <-function() {
    
    supportVectors <-  trainAndTest[[1]][svmModel$index, ]
    cat(c("Number of SVs: ", nrow(supportVectors), "\n"))
-   virtualTrainSet <- synthesizeDataSetFast(supportVectors, 1)  #use translational jitter to synthesize data from the support vectors
+   virtualTrainSet <- synthesizeDataSetFast(supportVectors, 2)  #use translational jitter to synthesize data from the support vectors
    cat(c("Resulting number: ", nrow(virtualTrainSet), "\n"))
    
    virtualSVM <- rageAgainstTheSupportVectorMachine(virtualTrainSet, virtualSVMModelName, poly, bestGamma, bestCost, bestCoef)

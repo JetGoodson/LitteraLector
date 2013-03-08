@@ -192,7 +192,7 @@ synthesizeDataSetFast <- function(dataset, jitterSize) {
       if(!(x == 0 && y == 0)) {
         dataset <- rbind(dataset, jitterHive(datasetOrig, x, y))
       }}}
-  return(dataset)
+  return(getSparse(dataset))
 }#end of synthesizeDataSetFast
 
 
